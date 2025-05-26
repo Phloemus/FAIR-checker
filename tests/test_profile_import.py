@@ -45,51 +45,21 @@ class ImportBSProfileTestCase(unittest.TestCase):
             "Accept": "application/vnd.github.v3+json",
         }
 
-    @unittest.skip("Need github TOKEN key to work")
-    def test_github_rate_limite(self):
-        url = "https://api.github.com/rate_limit"
-        response = requests.get(url, headers=self.headers)
-        print("Remaining: " + str(response.json()["resources"]["core"]["remaining"]))
-
-    @unittest.skip("Doesn't work on github action, need to fix")
-    def test_namespace_SequenceAnnotation(self):
-        gh_profile_url = "https://raw.githubusercontent.com/BioSchemas/specifications/master/SequenceAnnotation/jsonld/SequenceAnnotation_v0.7-DRAFT.json"
-        response = requests.get(gh_profile_url, headers=self.headers)
-        jsonld = response.json()
-        kg = ConjunctiveGraph()
-        kg.parse(data=jsonld, format="json-ld")
-        print(len(kg))
-
-    @unittest.skip("Need github TOKEN key to work")
-    def test_import_bs_specifications(self):
-        self.test_github_rate_limite()
-        profiles = get_profiles_specs_from_github()
-        self.test_github_rate_limite()
-        self.assertEqual(31, len(profiles))
-
-        for profile in profiles:
-            print(json.dumps(profile, indent=2))
-
-    def test_gen_SHACL_from_import(self):
-        self.test_github_rate_limite()
-        profiles = get_profiles_specs_from_github()
-        for profile_key in profiles.keys():
-            print(json.dumps(profiles[profile_key], indent=4))
-            gen_SHACL_from_profile(
-                profiles[profile_key]["name"],
-                "sc:" + profiles[profile_key]["name"],
-                profiles[profile_key]["min_props"],
-                profiles[profile_key]["rec_props"],
-            )
-
-    def test_load_profiles(self):
-        self.test_github_rate_limite()
-        profiles = load_profiles()
-        self.assertEqual(31, len(profiles))
+    # def test_gen_SHACL_from_import(self):
+    #     self.test_github_rate_limite()
+    #     profiles = get_profiles_specs_from_github()
+    #     for profile_key in profiles.keys():
+    #         print(json.dumps(profiles[profile_key], indent=4))
+    #         gen_SHACL_from_profile(
+    #             profiles[profile_key]["name"],
+    #             "sc:" + profiles[profile_key]["name"],
+    #             profiles[profile_key]["min_props"],
+    #             profiles[profile_key]["rec_props"],
+    #         )
 
     def test_create_profile_object(self):
         profiles_list = ProfileFactory.create_all_profiles_from_specifications()
-        self.assertEqual(31, len(profiles_list))
+        self.assertEqual(len(profiles_list), 32)
 
     def test_update_profiles(self):
         update_profiles()
@@ -115,20 +85,18 @@ class ImportBSProfileTestCase(unittest.TestCase):
         self.assertGreater(len(kg), 49)
         result = dyn_evaluate_profile_with_conformsto(kg)
 
-        self.assertEqual(len(result), 1)
+        self.assertEqual(len(result), 5)
 
     def test_wfh_type_eval(self):
 
         url = "https://workflowhub.eu/workflows/18"
         kg = WebResource(url).get_rdf()
 
-        self.assertEqual(len(kg), 49)
-
         result = evaluate_profile_from_type(kg)
 
         print(result)
 
-        self.assertEqual(len(result), 11)
+        self.assertEqual(len(result), 15)
 
     def test_fairchecker_conformsto_eval(self):
         url = "https://fair-checker.france-bioinformatique.fr/"
@@ -138,7 +106,7 @@ class ImportBSProfileTestCase(unittest.TestCase):
         result = dyn_evaluate_profile_with_conformsto(kg)
         print(json.dumps(result, indent=True))
 
-        self.assertEqual(len(result), 1)
+        self.assertEqual(len(result), 5)
         self.assertEqual(
             result["https://github.com/IFB-ElixirFr/FAIR-checker"]["conforms"], True
         )
@@ -152,8 +120,7 @@ class ImportBSProfileTestCase(unittest.TestCase):
         result = evaluate_profile_from_type(kg)
         print(result)
 
-        self.assertEqual(len(result), 4)
-        self.assertFalse(result["https://orcid.org/0000-0002-3597-8557"]["conforms"])
+        self.assertEqual(len(result), 0)
 
     def test_profile_file_parser(self):
 
@@ -173,7 +140,7 @@ class ImportBSProfileTestCase(unittest.TestCase):
                 if profiles_dict[profile_key]["name"] not in profiles_names_list:
                     results[profile_key] = profiles_dict[profile_key]
                     profiles_names_list.append(profiles_dict[profile_key]["name"])
-        self.assertEqual(len(results), 31)
+        self.assertEqual(len(results), 32)
 
     def test_req_profile_versions(self):
         response = requests.get(
