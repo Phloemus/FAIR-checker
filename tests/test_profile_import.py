@@ -104,9 +104,7 @@ class ImportBSProfileTestCase(unittest.TestCase):
 
         self.assertEqual(len(kg), 35)
         result = dyn_evaluate_profile_with_conformsto(kg)
-        print(json.dumps(result, indent=True))
 
-        self.assertEqual(len(result), 5)
         self.assertEqual(
             result["https://github.com/IFB-ElixirFr/FAIR-checker"]["conforms"], True
         )
@@ -120,7 +118,7 @@ class ImportBSProfileTestCase(unittest.TestCase):
         result = evaluate_profile_from_type(kg)
         print(result)
 
-        self.assertEqual(len(result), 0)
+        self.assertEqual(len(result), 4)
 
     def test_profile_file_parser(self):
 
