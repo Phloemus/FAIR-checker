@@ -68,10 +68,12 @@ class TestingUrlPatterns(unittest.TestCase):
     def test_external_links_KG(self):
         # url = "http://www.wikidata.org/entity/Q28665865" TODO SPARQL describe not working
         # url = "https://search.datacite.org/works/10.7892/boris.108387" TODO SPARQL describe not working
-        url = "https://bio.tools/bwa"
+        # url = "https://bio.tools/bwa"
+        web_resource = WebResource("https://bio.tools/bwa")
+        kg = web_resource.get_rdf()
 
-        kg = ConjunctiveGraph()
-        kg = describe_biotools(url, kg)
+        # kg = ConjunctiveGraph()
+        # kg = describe_biotools(url, kg)
         # print(kg.serialize(format="turtle").decode())
 
         domains = []
