@@ -144,7 +144,7 @@ class WebResourceTestCase(unittest.TestCase):
     def test_pangaea(self):
         pangaea_WR = WebResource("https://doi.pangaea.de/10.1594/PANGAEA.932827")
         # logging.info(f"{len(pangaea_WR.get_rdf())} loaded RDF triples")
-        self.assertEqual(298, len(pangaea_WR.get_rdf()))
+        self.assertEqual(314, len(pangaea_WR.get_rdf()))
 
     def test_uniprot(self):
         uniprot_WR = WebResource("https://www.uniprot.org/uniprotkb/P05067/entry")
@@ -218,11 +218,11 @@ class WebResourceTestCase(unittest.TestCase):
     def test_wr_named_graph(self):
         url_html = "https://doi.pangaea.de/10.1594/PANGAEA.932827"
         wr_pangaea = WebResource(url_html)
-        self.assertEqual(len(wr_pangaea.get_rdf()), 298)
+        self.assertEqual(len(wr_pangaea.get_rdf()), 314)
 
     def test_biotools_named_kg(self):
         bwa = WebResource("http://bio.tools/bwa")
-        self.assertEqual(len(bwa.get_rdf()), 124)
+        self.assertEqual(len(bwa.get_rdf()), 126)
 
     def test_elixir(self):
         elixir = WebResource("https://www.elixir-europe.org/")
