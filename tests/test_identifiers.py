@@ -4,10 +4,9 @@ from pathlib import Path
 from urllib.parse import urlparse
 import logging
 import sys
-from rdflib import ConjunctiveGraph, URIRef
+from rdflib import URIRef
 
 from metrics.F1B_Impl import F1B_Impl
-from metrics.util import describe_biotools
 from metrics.WebResource import WebResource
 
 logging.basicConfig(
