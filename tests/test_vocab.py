@@ -7,8 +7,6 @@ from metrics.WebResource import WebResource
 
 
 class CommunityVocabTestCase(unittest.TestCase):
-    def tearDown(self):
-        self.app_context.pop()
 
     @classmethod
     def tearDownModule(cls) -> None:
@@ -98,14 +96,14 @@ class CommunityVocabTestCase(unittest.TestCase):
 
     def test_status_external_services(self):
         STATUS_BIOPORTAL = requests.head(
-            "https://bioportal.bioontology.org/"
+            "https://data.bioontology.org/search"
         ).status_code
         STATUS_OLS = requests.head("https://www.ebi.ac.uk/ols4/index").status_code
         STATUS_LOV = requests.head(
             "https://lov.linkeddata.es/dataset/lov/sparql"
         ).status_code
 
-        self.assertEqual(STATUS_BIOPORTAL, 200)
+        self.assertEqual(STATUS_BIOPORTAL, 401)
         self.assertEqual(STATUS_LOV, 200)
         self.assertEqual(STATUS_OLS, 200)
 
