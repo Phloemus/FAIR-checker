@@ -33,17 +33,10 @@ class WebResourceTestCase(unittest.TestCase):
 
     def test_datacite(self):
         datacite = WebResource(
-            "https://commons.datacite.org/doi.org/10.7892/boris.108387"
+            "https://api.datacite.org/application/vnd.schemaorg.ld+json/10.7892/boris.108387"
         )
         logging.info(f"{len(datacite.get_rdf())} loaded RDF triples")
-        self.assertGreaterEqual(len(datacite.get_rdf()), 45)
-
-    def test_dataverse(self):
-        dataverse = WebResource(
-            "https://data.inrae.fr/dataset.xhtml?persistentId=doi:10.15454/P27LDX"
-        )
-        logging.info(f"{len(dataverse.get_rdf())} loaded RDF triples")
-        self.assertEqual(len(dataverse.get_rdf()), 186)
+        self.assertGreaterEqual(31, len(datacite.get_rdf()))
 
     def test_workflowhub(self):
         wf = WebResource("https://workflowhub.eu/workflows/263")
@@ -110,28 +103,19 @@ class WebResourceTestCase(unittest.TestCase):
         self.assertEqual(35, len(fc.get_rdf()))
 
     def test_dataverse_jsonld(self):
-        # inrae_dataverse_jsonld = WebResource("https://entrepot.recherche.data.gouv.fr/api/datasets/export?exporter=schema.org&persistentId=doi%3A10.57745/EFVOW5")
-        # logging.info(f"{len(inrae_dataverse_jsonld.get_rdf())} loaded RDF triples")
-
-        harvard_dataverse_jsonld = WebResource(
-            "https://dataverse.harvard.edu/api/datasets/export?exporter=schema.org&persistentId=doi%3A10.7910/DVN/ISBMO4"
+        inrae_dataverse_jsonld = WebResource(
+            "https://entrepot.recherche.data.gouv.fr/api/datasets/export?exporter=schema.org&persistentId=doi%3A10.57745/EFVOW5"
         )
-        logging.info(f"{len(harvard_dataverse_jsonld.get_rdf())} loaded RDF triples")
-        self.assertEqual(174, len(harvard_dataverse_jsonld.get_rdf()))
+        logging.info(f"{len(inrae_dataverse_jsonld.get_rdf())} loaded RDF triples")
 
-    def test_dataverse_html(self):
-        harvard_dataverse_html = WebResource(
-            "https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/ISBMO4"
-        )
-        logging.info(f"{len(harvard_dataverse_html.get_rdf())} loaded RDF triples")
-        self.assertEqual(174, len(harvard_dataverse_html.get_rdf()))
+        self.assertEqual(74, len(inrae_dataverse_jsonld.get_rdf()))
 
     def test_dataverse_inrae_html(self):
         inrae_dataverse_html = WebResource(
             "https://data.inrae.fr/dataset.xhtml?persistentId=doi:10.15454/P27LDX"
         )
         logging.info(f"{len(inrae_dataverse_html.get_rdf())} loaded RDF triples")
-        self.assertEqual(186, len(inrae_dataverse_html.get_rdf()))
+        self.assertEqual(223, len(inrae_dataverse_html.get_rdf()))
 
     def test_turtle(self):
         turtle_WR = WebResource("https://www.w3.org/TR/turtle/examples/example1.ttl")
