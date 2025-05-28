@@ -1,17 +1,11 @@
 import unittest
 import requests
-import json
 import yaml
-from rdflib import ConjunctiveGraph
-
-from profiles.bioschemas_shape_gen import get_profiles_specs_from_github
-from profiles.bioschemas_shape_gen import gen_SHACL_from_profile
 
 # from profiles.Profile
 from profiles.ProfileFactory import (
     dyn_evaluate_profile_with_conformsto,
     profile_file_parser,
-    load_profiles,
     update_profiles,
     evaluate_profile_from_type,
 )
