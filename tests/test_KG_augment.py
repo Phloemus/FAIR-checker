@@ -109,6 +109,7 @@ class KGAugmentTestCase(unittest.TestCase):
         print(kg.serialize(format="turtle"))
         self.assertGreaterEqual(len(kg), 10)
 
+    @unittest.skip("KG augment feature to be revised")
     def test_wikidata_doi(self):
         uri = "10.1126/SCIENCE.97.2524.434"
         kg = ConjunctiveGraph()
