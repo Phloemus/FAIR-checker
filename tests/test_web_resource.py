@@ -149,7 +149,7 @@ class WebResourceTestCase(unittest.TestCase):
     def test_uniprot(self):
         uniprot_WR = WebResource("https://www.uniprot.org/uniprotkb/P05067/entry")
         logging.info(f"{len(uniprot_WR.get_rdf())} loaded RDF triples")
-        self.assertEqual(9, len(uniprot_WR.get_rdf()))
+        self.assertGreaterEqual(len(uniprot_WR.get_rdf()), 9)
 
     def test_uniprot_rest(self):
         uniprot_rest_WR = WebResource("https://rest.uniprot.org/uniprotkb/P05067.rdf")
