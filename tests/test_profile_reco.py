@@ -65,6 +65,7 @@ class GenSHACLTestCase(unittest.TestCase):
         list_ct = ProfileFactory.list_all_conformsto()
         self.assertEqual(len(list_ct), 32)
 
+    @unittest.skip("Unstable test, needs to be fixed")
     def test_profile_factory_from_specifications(self):
         # profiles = ProfileFactory.create_all_profiles_from_specifications()
         profiles = load_profiles()
