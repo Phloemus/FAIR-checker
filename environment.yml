@@ -21,7 +21,7 @@ dependencies:
   - termcolor==1.1.0
   - tqdm==4.62.3
   - webdriver-manager==4.0.2
-  - flake8==3.7.9
+  - flake8
   - pytest==6.2.5
   - coverage==6.2
   - gitpython
