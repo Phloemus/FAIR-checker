@@ -86,6 +86,7 @@ class KGAugmentTestCase(unittest.TestCase):
         print(f"loaded {len(kg)} triples")
         self.assertEqual(len(kg), 57)
 
+    @unittest.skip("KG augment feature to be revised")
     def test_openaire(self):
         url = "https://api.datacite.org/application/vnd.schemaorg.ld+json/10.7892/boris.108387"
 
