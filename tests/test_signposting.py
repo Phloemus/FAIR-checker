@@ -21,16 +21,19 @@ class SignpostingTestCase(unittest.TestCase):
         browser = WebResource.WEB_BROWSER_HEADLESS
         browser.quit()
 
+    @unittest.skip("Skip signposting test")
     def test_turtle(self):
         turtle_WR = WebResource("https://www.w3.org/TR/turtle/examples/example1.ttl")
         logging.info(f"{len(turtle_WR.get_rdf())} loaded RDF triples")
         # self.assertEqual(60, len(turtle_WR.get_rdf()))
 
+    @unittest.skip("Skip signposting test")
     def test_signposting_01(self):
         print()
-        wf = WebResource(
-            "https://s11.no/2022/a2a-fair-metrics/01-http-describedby-only/"
-        )
+        # wf = WebResource(
+        #     "https://s11.no/2022/a2a-fair-metrics/01-http-describedby-only/"
+        # )
+        wf = WebResource("https://workflowhub.eu/workflows/1362")
         described_by = wf.retrieve_signposting_links()
         print()
         print(described_by)

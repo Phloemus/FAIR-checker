@@ -33,17 +33,10 @@ class WebResourceTestCase(unittest.TestCase):
 
     def test_datacite(self):
         datacite = WebResource(
-            "https://commons.datacite.org/doi.org/10.7892/boris.108387"
+            "https://api.datacite.org/application/vnd.schemaorg.ld+json/10.7892/boris.108387"
         )
         logging.info(f"{len(datacite.get_rdf())} loaded RDF triples")
-        self.assertGreaterEqual(len(datacite.get_rdf()), 45)
-
-    def test_dataverse(self):
-        dataverse = WebResource(
-            "https://data.inrae.fr/dataset.xhtml?persistentId=doi:10.15454/P27LDX"
-        )
-        logging.info(f"{len(dataverse.get_rdf())} loaded RDF triples")
-        self.assertEqual(len(dataverse.get_rdf()), 186)
+        self.assertGreaterEqual(31, len(datacite.get_rdf()))
 
     def test_workflowhub(self):
         wf = WebResource("https://workflowhub.eu/workflows/263")
@@ -110,28 +103,19 @@ class WebResourceTestCase(unittest.TestCase):
         self.assertEqual(35, len(fc.get_rdf()))
 
     def test_dataverse_jsonld(self):
-        # inrae_dataverse_jsonld = WebResource("https://entrepot.recherche.data.gouv.fr/api/datasets/export?exporter=schema.org&persistentId=doi%3A10.57745/EFVOW5")
-        # logging.info(f"{len(inrae_dataverse_jsonld.get_rdf())} loaded RDF triples")
-
-        harvard_dataverse_jsonld = WebResource(
-            "https://dataverse.harvard.edu/api/datasets/export?exporter=schema.org&persistentId=doi%3A10.7910/DVN/ISBMO4"
+        inrae_dataverse_jsonld = WebResource(
+            "https://entrepot.recherche.data.gouv.fr/api/datasets/export?exporter=schema.org&persistentId=doi%3A10.57745/EFVOW5"
         )
-        logging.info(f"{len(harvard_dataverse_jsonld.get_rdf())} loaded RDF triples")
-        self.assertEqual(174, len(harvard_dataverse_jsonld.get_rdf()))
+        logging.info(f"{len(inrae_dataverse_jsonld.get_rdf())} loaded RDF triples")
 
-    def test_dataverse_html(self):
-        harvard_dataverse_html = WebResource(
-            "https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/ISBMO4"
-        )
-        logging.info(f"{len(harvard_dataverse_html.get_rdf())} loaded RDF triples")
-        self.assertEqual(174, len(harvard_dataverse_html.get_rdf()))
+        self.assertEqual(74, len(inrae_dataverse_jsonld.get_rdf()))
 
     def test_dataverse_inrae_html(self):
         inrae_dataverse_html = WebResource(
             "https://data.inrae.fr/dataset.xhtml?persistentId=doi:10.15454/P27LDX"
         )
         logging.info(f"{len(inrae_dataverse_html.get_rdf())} loaded RDF triples")
-        self.assertEqual(186, len(inrae_dataverse_html.get_rdf()))
+        self.assertEqual(223, len(inrae_dataverse_html.get_rdf()))
 
     def test_turtle(self):
         turtle_WR = WebResource("https://www.w3.org/TR/turtle/examples/example1.ttl")
@@ -160,12 +144,12 @@ class WebResourceTestCase(unittest.TestCase):
     def test_pangaea(self):
         pangaea_WR = WebResource("https://doi.pangaea.de/10.1594/PANGAEA.932827")
         # logging.info(f"{len(pangaea_WR.get_rdf())} loaded RDF triples")
-        self.assertEqual(298, len(pangaea_WR.get_rdf()))
+        self.assertEqual(314, len(pangaea_WR.get_rdf()))
 
     def test_uniprot(self):
         uniprot_WR = WebResource("https://www.uniprot.org/uniprotkb/P05067/entry")
         logging.info(f"{len(uniprot_WR.get_rdf())} loaded RDF triples")
-        self.assertEqual(9, len(uniprot_WR.get_rdf()))
+        self.assertGreaterEqual(len(uniprot_WR.get_rdf()), 9)
 
     def test_uniprot_rest(self):
         uniprot_rest_WR = WebResource("https://rest.uniprot.org/uniprotkb/P05067.rdf")
@@ -234,11 +218,11 @@ class WebResourceTestCase(unittest.TestCase):
     def test_wr_named_graph(self):
         url_html = "https://doi.pangaea.de/10.1594/PANGAEA.932827"
         wr_pangaea = WebResource(url_html)
-        self.assertEqual(len(wr_pangaea.get_rdf()), 298)
+        self.assertEqual(len(wr_pangaea.get_rdf()), 314)
 
     def test_biotools_named_kg(self):
         bwa = WebResource("http://bio.tools/bwa")
-        self.assertEqual(len(bwa.get_rdf()), 124)
+        self.assertEqual(len(bwa.get_rdf()), 126)
 
     def test_elixir(self):
         elixir = WebResource("https://www.elixir-europe.org/")

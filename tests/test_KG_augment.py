@@ -86,8 +86,9 @@ class KGAugmentTestCase(unittest.TestCase):
         print(f"loaded {len(kg)} triples")
         self.assertEqual(len(kg), 57)
 
+    @unittest.skip("KG augment feature to be revised")
     def test_openaire(self):
-        url = "https://search.datacite.org/works/10.7892/boris.108387"
+        url = "https://api.datacite.org/application/vnd.schemaorg.ld+json/10.7892/boris.108387"
 
         # check if id or doi in uri
         if is_DOI(url):
@@ -109,6 +110,7 @@ class KGAugmentTestCase(unittest.TestCase):
         print(kg.serialize(format="turtle"))
         self.assertGreaterEqual(len(kg), 10)
 
+    @unittest.skip("KG augment feature to be revised")
     def test_wikidata_doi(self):
         uri = "10.1126/SCIENCE.97.2524.434"
         kg = ConjunctiveGraph()

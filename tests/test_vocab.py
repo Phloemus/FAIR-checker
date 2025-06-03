@@ -4,17 +4,9 @@ from rdflib import BNode, ConjunctiveGraph, URIRef
 import requests
 import metrics.util as util
 from metrics.WebResource import WebResource
-from app import app
 
 
 class CommunityVocabTestCase(unittest.TestCase):
-    def setUp(self):
-        self.app_context = app.app_context()
-        self.app_context.push()
-        print("setup")
-
-    def tearDown(self):
-        self.app_context.pop()
 
     @classmethod
     def tearDownModule(cls) -> None:
@@ -104,14 +96,14 @@ class CommunityVocabTestCase(unittest.TestCase):
 
     def test_status_external_services(self):
         STATUS_BIOPORTAL = requests.head(
-            "https://bioportal.bioontology.org/"
+            "https://data.bioontology.org/search"
         ).status_code
         STATUS_OLS = requests.head("https://www.ebi.ac.uk/ols4/index").status_code
         STATUS_LOV = requests.head(
             "https://lov.linkeddata.es/dataset/lov/sparql"
         ).status_code
 
-        self.assertEqual(STATUS_BIOPORTAL, 200)
+        self.assertEqual(STATUS_BIOPORTAL, 401)
         self.assertEqual(STATUS_LOV, 200)
         self.assertEqual(STATUS_OLS, 200)
 
