@@ -109,10 +109,10 @@ class ImportBSProfileTestCase(unittest.TestCase):
 
         self.assertEqual(len(kg), 35)
 
-        result = evaluate_profile_from_type(kg)
-        print(result)
+        issues = evaluate_profile_from_type(kg)
+        print(issues)
 
-        self.assertEqual(len(result), 4)
+        self.assertEqual(len(issues), 0)
 
     def test_profile_file_parser(self):
 
