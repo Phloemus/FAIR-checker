@@ -265,7 +265,7 @@ DICT_BANNER_INFO = {"banner_message_info": {}}
 # Update banner info with the message in .env
 @app.context_processor
 def display_info():
-    global DICT_BANNER_INFO
+    global DICT_BANNER_INFO  # noqa: F824
 
     try:
         env_banner_info = dotenv_values(".env")["BANNER_INFO"]
@@ -285,7 +285,7 @@ def display_info():
 
 
 def update_vocab_status():
-    global DICT_BANNER_INFO, STATUS_BIOPORTAL, STATUS_OLS, STATUS_LOV
+    global DICT_BANNER_INFO, STATUS_BIOPORTAL, STATUS_OLS, STATUS_LOV  # noqa: F824
 
     STATUS_BIOPORTAL = requests.head("https://bioportal.bioontology.org/").status_code
     STATUS_OLS = requests.head("https://www.ebi.ac.uk/ols4/index").status_code
@@ -321,7 +321,7 @@ profiles = PROFILES
 
 @app.context_processor
 def display_vocab_status():
-    global DICT_BANNER_INFO
+    global DICT_BANNER_INFO  # noqa: F824
 
     return DICT_BANNER_INFO
 
@@ -1358,7 +1358,7 @@ def recommendation(emit_json, metric_name, comment):
 
 
 def write_temp_metric_res_file(principle, api_url, time, score, comment, content_uuid):
-    global DICT_TEMP_RES
+    global DICT_TEMP_RES  # noqa: F824
     sid = request.sid
     temp_file_path = "./temp/" + sid
 
