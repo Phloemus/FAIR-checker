@@ -220,7 +220,6 @@ load_profiles()
 
 METRICS = {}
 # json_metrics = test_metric.getMetrics()
-print("start")
 factory = FAIRMetricsFactory()
 
 # # A DEPLACER AU LANCEMENT DU SERVEUR ######
