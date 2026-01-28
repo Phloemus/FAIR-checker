@@ -31,25 +31,47 @@ def profile_file_parser(url_profile):
             }
             profiles_versions = request_profile_versions()
 
-            # for element in profiles_jsonld["@graph"]:
             if element["@type"] == "rdfs:Class":
-                # print("Class: " + element["@id"])
+                print("Class: " + element["@id"])
+                    
                 name = element["rdfs:label"]
                 profile_dict["id"] = element["@id"].replace("bioschemas", "bsc")
                 profile_dict["name"] = name
 
-                sc_type = element["rdfs:subClassOf"]["@id"]
+                if "rdfs:subClassOf" not in element.keys():
+                    continue
+                
+                if isinstance(element["rdfs:subClassOf"], list):
+                    for sc in element["rdfs:subClassOf"]:
+                        if "@id" not in sc.keys():
+                            continue
+                        sc_type = sc["@id"]
+                        # replace DDE prefix by schema.org prefix for Schema.org types
+                        replace_prefix = {
+                            "bioschemastypes:": "sc:",
+                            # "bioschemastypesdrafts:": "sc:",
+                            "schema:": "sc:",
+                        }
+                        for i, j in replace_prefix.items():
+                            sc_type = sc_type.replace(i, j)
 
-                # replace DDE prefix by schema.org prefix for Schema.org types
-                replace_prefix = {
-                    "bioschemastypes:": "sc:",
-                    # "bioschemastypesdrafts:": "sc:",
-                    "schema:": "sc:",
-                }
-                for i, j in replace_prefix.items():
-                    sc_type = sc_type.replace(i, j)
+                        profile_dict["target_classes"].append(sc_type)
+                else:
+                    if "@id" not in element["rdfs:subClassOf"].keys():
+                        continue
+                    sc_type = element["rdfs:subClassOf"]["@id"]
+                    # replace DDE prefix by schema.org prefix for Schema.org types
+                    replace_prefix = {
+                        "bioschemastypes:": "sc:",
+                        # "bioschemastypesdrafts:": "sc:",
+                        "schema:": "sc:",
+                    }
+                    for i, j in replace_prefix.items():
+                        sc_type = sc_type.replace(i, j)
 
-                profile_dict["target_classes"].append(sc_type)
+                    profile_dict["target_classes"].append(sc_type)
+
+
                 if "schema:schemaVersion" in element.keys():
                     for url in element["schema:schemaVersion"]:
                         if "https://bioschemas.org" in url:
