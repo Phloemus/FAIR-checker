@@ -30,14 +30,14 @@ def profile_file_parser(url_profile):
 
             if element["@type"] == "rdfs:Class":
                 print("Class: " + element["@id"])
-                    
+
                 name = element["rdfs:label"]
                 profile_dict["id"] = element["@id"].replace("bioschemas", "bsc")
                 profile_dict["name"] = name
 
                 if "rdfs:subClassOf" not in element.keys():
                     continue
-                
+
                 if isinstance(element["rdfs:subClassOf"], list):
                     for sc in element["rdfs:subClassOf"]:
                         if "@id" not in sc.keys():
@@ -67,7 +67,6 @@ def profile_file_parser(url_profile):
                         sc_type = sc_type.replace(i, j)
 
                     profile_dict["target_classes"].append(sc_type)
-
 
                 if "schema:schemaVersion" in element.keys():
                     for url in element["schema:schemaVersion"]:

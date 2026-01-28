@@ -29,6 +29,13 @@ load_dotenv(path.join(basedir, ".env"))
 
 
 class ImportBSProfileTestCase(unittest.TestCase):
+    @classmethod
+    def tearDownModule(cls) -> None:
+        super().tearDownModule()
+        browser = WebResource.WEB_BROWSER_HEADLESS
+        browser.quit()
+
+    @classmethod
     def setUp(self):
         """Set up application for testing."""
         github_token = environ.get("GITHUB_TOKEN")
