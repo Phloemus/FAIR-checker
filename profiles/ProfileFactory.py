@@ -9,9 +9,6 @@ import yaml
 from rdflib import URIRef, ConjunctiveGraph
 
 
-# from app import dev_logger
-
-
 def profile_file_parser(url_profile):
     response = requests.get(url_profile)
     if response.status_code == 200:
@@ -520,7 +517,7 @@ def evaluate_profile_from_type(kg):
         if sub_kg_list:
             for sub_kg in sub_kg_list:
                 s = sub_kg["subject"]
-                if not str(s) in results.keys():
+                if str(s) not in results.keys():
                     o = sub_kg["object"]
                     sub_kg = sub_kg["sub_kg"]
                     shacl_shape = PROFILES[p_key].get_shacl_shape()
