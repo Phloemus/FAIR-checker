@@ -42,8 +42,8 @@ class WebResource:
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--disable-gpu")
+    #chrome_options.add_argument("--disable-dev-shm-usage")
+    #chrome_options.add_argument("--disable-gpu")
 
     proxy = os.getenv("HTTP_PROXY")
     if proxy:
@@ -470,24 +470,24 @@ class WebResource:
         return response.text
 
     def get_html_selenium(self, url):
-        try:
-            browser = WebResource.WEB_BROWSER_HEADLESS
-            browser.get(url)
-            #time.sleep(2)
-            browser.set_page_load_timeout(30)
-            browser.implicitly_wait(30)
-            WebDriverWait(self.WEB_BROWSER_HEADLESS, self.SERVER_TIMEOUT).until(
-                lambda wd: self.WEB_BROWSER_HEADLESS.execute_script(
-                        "return document.readyState"
-                    )
-                    == "complete",
-                    "Page taking too long to load",
+        #try:
+        browser = WebResource.WEB_BROWSER_HEADLESS
+        browser.get(url)
+        #time.sleep(2)
+        browser.set_page_load_timeout(30)
+        browser.implicitly_wait(30)
+        WebDriverWait(self.WEB_BROWSER_HEADLESS, self.SERVER_TIMEOUT).until(
+            lambda wd: self.WEB_BROWSER_HEADLESS.execute_script(
+                    "return document.readyState"
                 )
-            html_content = browser.page_source
-            logging.debug(type(browser.page_source))
-            logging.info(f"size of the parsed web page: {len(html_content)}")
-        finally:
-            browser.quit()
+                == "complete",
+                "Page taking too long to load",
+            )
+        html_content = browser.page_source
+        logging.debug(type(browser.page_source))
+        logging.info(f"size of the parsed web page: {len(html_content)}")
+        #finally:
+        #    browser.quit()
         
         return html_content
 
