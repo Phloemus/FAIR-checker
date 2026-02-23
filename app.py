@@ -6,8 +6,8 @@ os.environ["EVENTLET_HUB"] = "poll"
 import eventlet
 
 # from https://github.com/eventlet/eventlet/issues/670
-# eventlet.monkey_patch(select=False)
-eventlet.monkey_patch(os=False, subprocess=False)
+eventlet.monkey_patch(select=False)
+# eventlet.monkey_patch(os=False, subprocess=False)
 
 import sys
 from flask import (
