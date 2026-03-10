@@ -1,0 +1,13 @@
+,URL,F1A,F1B,F2A,F2B,A1.1,A1.2,I1,I2,I3,R1.1,R1.2,R1.3,F_score,A_score,I_score,R_score,FAIR_score
+0,https://portal.erga-biodiversity.eu/organism/SAMEA112797446,2,0,0,0,2,0,0,0,0,0,0,0,25.0,50.0,0.0,0.0,16.7
+1,https://www.ebi.ac.uk/ena/browser/view/SAMEA112797446,2,0,0,0,2,0,0,0,0,0,0,0,25.0,50.0,0.0,0.0,16.7
+2,https://www.ebi.ac.uk/biosamples/samples/SAMEA112797446,2,0,0,0,2,0,0,0,0,0,0,0,25.0,50.0,0.0,0.0,16.7
+3,https://www.ebi.ac.uk/biosamples/samples/SAMEA112797446.ldjson,2,2,1,1,2,0,1,1,0,0,0,1,75.0,50.0,33.3,16.7,45.8
+4,http://portal.boldsystems.org/record/CHOLH011-12,2,0,0,0,2,0,0,0,0,0,0,0,25.0,50.0,0.0,0.0,16.7
+5,https://doi.org/10.5883/DP-Latest,2,0,0,0,2,0,0,0,0,0,0,0,25.0,50.0,0.0,0.0,16.7
+6,https://metadatacatalogue.lifewatch.eu/srv/eng/catalog.search#/metadata/dc512697-ed50-40c5-a3cd-1774000444b9,2,0,0,0,2,0,0,0,0,0,0,0,25.0,50.0,0.0,0.0,16.7
+7,https://metadatacatalogue.lifewatch.eu/srv/api/records/dc512697-ed50-40c5-a3cd-1774000444b9/formatters/rdf?output=xml,2,0,0,0,2,0,0,0,0,0,0,0,25.0,50.0,0.0,0.0,16.7
+8,https://doi.org/10.82159/gt66-zt98,2,0,0,0,2,0,0,0,0,0,0,0,25.0,50.0,0.0,0.0,16.7
+9,https://doi.org/10.3535/ZVR-CRA-1Y1?noredirect,2,0,0,0,2,0,0,0,0,0,0,0,25.0,50.0,0.0,0.0,16.7
+10,https://doi.org/10.3535/ZVR-CRA-1Y1,2,0,0,0,2,0,0,0,0,0,0,0,25.0,50.0,0.0,0.0,16.7
+11,https://disscover.dissco.eu/api/digital-specimen/v1/10.3535/ZVR-CRA-1Y1,2,0,0,0,2,0,0,0,0,0,0,0,25.0,50.0,0.0,0.0,16.7
