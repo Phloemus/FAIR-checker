@@ -22,7 +22,7 @@ import logging
 import copy
 import re
 import validators
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
 
 
 class SOURCE(Enum):
@@ -55,8 +55,13 @@ cache_BP = TTLCache(
     maxsize=ttl_cache_maxsize, ttl=timedelta(hours=ttl_cache_timer), timer=datetime.now
 )
 
-# DOI regex
-regex = r"10.\d{4,9}\/[-._;()\/:A-Z0-9]+"
+# # DOI regex
+# regex = r"10.\d{4,9}\/[-._;()\/:A-Z0-9]+"
+
+DOI_PATTERN = re.compile(
+    r"^10\.\d{4,9}/[-._;()/:A-Z0-9]+$",
+    re.IGNORECASE,
+)
 
 
 # Dynamicaly generates a table with FAIR metrics implementations
@@ -217,13 +222,29 @@ def is_URL(any_url):
         return False
 
 
-def is_DOI(uri):
-    return bool(re.search(regex, uri, re.MULTILINE | re.IGNORECASE))
+def _extract_doi_candidate(value: str) -> str:
+    """Return a DOI candidate from raw input or a doi.org URL."""
+    s = value.strip()
+    if s.lower().startswith(("http://", "https://")):
+        parsed = urlparse(s)
+        if parsed.netloc.lower() in {"doi.org", "dx.doi.org"}:
+            return unquote(parsed.path.lstrip("/"))
+    return s
+
+
+def is_DOI(value: str) -> bool:
+    if not value:
+        return False
+
+    s = _extract_doi_candidate(value)
+    return DOI_PATTERN.fullmatch(s) is not None
 
 
 def get_DOI(uri):
-    match = re.search(regex, uri, re.MULTILINE | re.IGNORECASE)
-    return match.group(0)
+    doi = _extract_doi_candidate(uri)
+    if DOI_PATTERN.fullmatch(doi):
+        return doi
+    return None
 
 
 def remove_key_from_value(d, val):
