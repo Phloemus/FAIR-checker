@@ -61,6 +61,7 @@ class R12_Impl(AbstractFAIRMetrics):
             schema:publisher
             schema:provider
             schema:funder
+            schema:version
         """
         query_prov = (
             self.COMMON_SPARQL_PREFIX

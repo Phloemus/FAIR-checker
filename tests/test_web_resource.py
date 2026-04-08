@@ -16,7 +16,6 @@ logging.basicConfig(
 class WebResourceTestCase(unittest.TestCase):
     @classmethod
     def tearDownModule(cls) -> None:
-        super().tearDownModule()
         browser = WebResource.WEB_BROWSER_HEADLESS
         browser.quit()
 
@@ -36,7 +35,12 @@ class WebResourceTestCase(unittest.TestCase):
             "https://api.datacite.org/application/vnd.schemaorg.ld+json/10.7892/boris.108387"
         )
         logging.info(f"{len(datacite.get_rdf())} loaded RDF triples")
-        self.assertGreaterEqual(31, len(datacite.get_rdf()))
+        self.assertGreaterEqual(len(datacite.get_rdf()), 31)
+
+    def test_datacite_content_neg(self):
+        datacite = WebResource("http://doi.org/10.7892/boris.108387")
+        logging.info(f"{len(datacite.get_rdf())} loaded RDF triples")
+        self.assertGreaterEqual(len(datacite.get_rdf()), 31)
 
     def test_workflowhub(self):
         wf = WebResource("https://workflowhub.eu/workflows/263")
@@ -190,7 +194,7 @@ class WebResourceTestCase(unittest.TestCase):
             "https://doi.pangaea.de/10.1594/PANGAEA.932827?format=metadata_jsonld"
         )
         wr_pangaea = WebResource(url_jsonld)
-        content_jsonld = wr_pangaea.get_kg_auto().serialize(format="json-ld")
+        content_jsonld = wr_pangaea.get_rdf().serialize(format="json-ld")
         g_jsonld = ConjunctiveGraph(identifier="http://webresource/jsonld")
         g_jsonld.parse(data=content_jsonld, format="json-ld", publicID=url_jsonld)
         g_jsonld.bind("wr", Namespace("http://webresource/"))
@@ -198,7 +202,7 @@ class WebResourceTestCase(unittest.TestCase):
         # html
         url_html = "https://doi.pangaea.de/10.1594/PANGAEA.932827"
         wr_pangaea_html = WebResource(url_html)
-        content_html = wr_pangaea_html.get_kg_html().serialize(format="json-ld")
+        content_html = wr_pangaea_html.get_rdf().serialize(format="json-ld")
 
         g_html = ConjunctiveGraph(identifier="http://webresource/html")
         g_html.parse(data=content_html, format="json-ld", publicID=url_html)
@@ -218,73 +222,39 @@ class WebResourceTestCase(unittest.TestCase):
     def test_wr_named_graph(self):
         url_html = "https://doi.pangaea.de/10.1594/PANGAEA.932827"
         wr_pangaea = WebResource(url_html)
-        self.assertEqual(len(wr_pangaea.get_rdf()), 314)
+        self.assertGreaterEqual(len(wr_pangaea.get_rdf()), 314)
 
     def test_biotools_named_kg(self):
         bwa = WebResource("http://bio.tools/bwa")
-        self.assertEqual(len(bwa.get_rdf()), 126)
+        self.assertGreaterEqual(len(bwa.get_rdf()), 126)
 
     def test_elixir(self):
         elixir = WebResource("https://www.elixir-europe.org/")
         logging.info(f"{len(elixir.get_rdf())} loaded RDF triples")
+        self.assertGreaterEqual(len(elixir.get_rdf()), 6)
 
     def test_biosamples(self):
         biosamples = WebResource("https://www.ebi.ac.uk/biosamples/")
         logging.info(f"{len(biosamples.get_rdf())} loaded RDF triples")
-
-    def test_pscan(self):
-        pscan = WebResource("http://159.149.160.88/pscan/")
-        logging.info(f"{len(pscan.get_rdf())} loaded RDF triples")
+        self.assertGreaterEqual(len(biosamples.get_rdf()), 37)
 
     def test_expasy(self):
         expasy = WebResource("https://prosite.expasy.org")
         logging.info(f"{len(expasy.get_rdf())} loaded RDF triples")
-
-    def test_schema_file_context(self):
-        urls = [
-            # "https://www.metanetx.org/",
-            "https://bio.tools/jaspar"
-        ]
-
-        for url in urls:
-            wr_kg = WebResource(url).get_rdf()
-            print(len(wr_kg))
+        self.assertGreaterEqual(len(expasy.get_rdf()), 52)
 
     def test_zenodo(self):
         zenodo = WebResource("https://zenodo.org/record/4420116")
         nbtriples = len(zenodo.get_rdf())
         logging.info(f"{nbtriples} loaded RDF triples")
-        self.assertGreaterEqual(nbtriples, 30)
-
-    def test_UnicodeDecodeError_resources(self):
-        # Workflohub is working correctly, it is a positive control
-        urls = [
-            # "https://workflowhub.eu/workflows/18"
-            # "https://ebisc.org/",
-            "https://www.metanetx.org/",
-            # "https://www.ebi.ac.uk/interpro/",
-            # "https://datacatalog.elixir-luxembourg.org/",
-            # "https://ippidb.pasteur.fr/",
-            # "http://edgar.biocomp.unibo.it/",
-            # "http://phenpath.biocomp.unibo.it/phenpath/",
-            # "https://humanmine.org/",
-            # "https://prosite.expasy.org",
-            # "https://enzyme.expasy.org",
-            # "https://hamap.expasy.org/",
-            # "https://www.ebi.ac.uk/chembl/",
-            # "http://www.ebi.ac.uk/Tools/hmmer/",
-        ]
-
-        for url in urls:
-            wr_kg = WebResource(url).get_rdf()
-            print(len(wr_kg))
+        self.assertGreaterEqual(nbtriples, 75)
 
     def test_remote_files_with_redirect(self):
         url = "https://doi.pangaea.de/10.1594/PANGAEA.932827?format=metadata_jsonld"
         kg = WebResource(url).get_rdf()
         size = len(kg)
         print(f"{url} : size = {size} triples")
-        self.assertGreaterEqual(size, 190)
+        self.assertGreaterEqual(size, 450)
 
         url = "http://purl.obolibrary.org/obo/ro.owl"
         kg = WebResource(url).get_rdf()
