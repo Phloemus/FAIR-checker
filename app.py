@@ -24,10 +24,8 @@ from argparse import RawTextHelpFormatter
 from datetime import datetime, timedelta
 from json import JSONDecodeError
 from os import path
-from pathlib import Path
 from string import Template
 
-import extruct
 import git
 import rdflib
 import requests
@@ -42,7 +40,6 @@ from dotenv import dotenv_values
 from flask import (
     Flask,
     Response,
-    jsonify,
     make_response,
     render_template,
     request,
@@ -76,8 +73,6 @@ from profiles.ProfileFactory import (
     load_profiles,
     update_profiles,
 )
-
-from queue import Queue
 
 basedir = path.abspath(path.dirname(__file__))
 

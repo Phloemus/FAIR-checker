@@ -14,10 +14,8 @@ logging.basicConfig(
 
 
 class ContentNegotiationTestCase(unittest.TestCase):
-
     # @unittest.skip("Skipping test")
     def test_uniprot_rdf_content(self):
-
         # use requests to get the RDF content from uniprot through content negotiation
         r = requests.get(
             "http://purl.uniprot.org/uniprot/P05067",
@@ -74,7 +72,6 @@ class ContentNegotiationTestCase(unittest.TestCase):
 
     def test_fc_api_content_negotiation(self):
         u = "http://purl.uniprot.org/citations/7913895"
-        kg = Graph()
         FC_get_md = "https://fair-checker.france-bioinformatique.fr/api/inspect/get_rdf_metadata"
 
         res = requests.get(url=FC_get_md, params={"url": u}, timeout=10)

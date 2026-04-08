@@ -17,7 +17,6 @@ class WebResourceV2TestCase(unittest.TestCase):
     UNIPROT_angptl6_ttl = "https://www.uniprot.org/uniprotkb/Q8NI99.ttl"
 
     def test_biotools_html_retrieves_rdf_triples(self):
-
         start_time = time.time()
         wr = WebResource(self.BIOTOOLS_DATASET_URL)
         end_time = time.time()
