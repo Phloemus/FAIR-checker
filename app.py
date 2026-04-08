@@ -1,81 +1,83 @@
 import copy
-
 import os
-os.environ["EVENTLET_HUB"] = "poll"
 
+os.environ["EVENTLET_HUB"] = "poll"
 import eventlet
 
 # from https://github.com/eventlet/eventlet/issues/670
 eventlet.monkey_patch(select=False)
 # eventlet.monkey_patch(os=False, subprocess=False)
 
+import argparse
+import atexit
+import functools
+import io
+import json
+import logging
+import logging.config
+import os
+import secrets
 import sys
+import time
+import uuid
+from argparse import RawTextHelpFormatter
+from datetime import datetime, timedelta
+from json import JSONDecodeError
+from os import path
+from pathlib import Path
+from string import Template
+
+import extruct
+import git
+import rdflib
+import requests
+
+# requests.packages.urllib3.disable_warnings(
+#    requests.packages.urllib3.exceptions.InsecureRequestWarning
+# )
+from apscheduler.schedulers.background import BackgroundScheduler
+from bson import ObjectId
+from bson.errors import InvalidId
+from dotenv import dotenv_values
 from flask import (
     Flask,
     Response,
-    request,
+    jsonify,
+    make_response,
     render_template,
+    request,
     send_file,
     send_from_directory,
-    make_response,
 )
-from flask_restx import Resource, Api, fields, reqparse
-from flask_cors import CORS
-from flask_socketio import SocketIO
-from flask_socketio import emit
 from flask_caching import Cache
-from os import path
-from dotenv import dotenv_values
-import secrets
-import time
-from string import Template
-import os
-import io
-import uuid
-import argparse
-import functools
-from argparse import RawTextHelpFormatter
-from datetime import datetime, timedelta
-import json
-from json import JSONDecodeError
-from pathlib import Path
-import rdflib
+from flask_cors import CORS
+from flask_restx import Api, Resource, fields, reqparse
+from flask_socketio import SocketIO, emit
+from pymongo import MongoClient
 from rdflib import ConjunctiveGraph, URIRef
-import extruct
-import logging
+from requests.exceptions import ConnectionError
 from rich.console import Console
+from rich.progress import track
 from rich.table import Table
 from rich.text import Text
-from rich.progress import track
+
 import metrics.util as util
 from metrics import test_metric
-from metrics.FAIRMetricsFactory import FAIRMetricsFactory
-from metrics.WebResource import WebResource
-from metrics.Evaluation import Result, Evaluation
-from profiles.bioschemas_shape_gen import validate_any_from_KG
-from metrics.util import SOURCE, inspect_onto_reg
+from metrics.Evaluation import Evaluation, Result
 from metrics.F1B_Impl import F1B_Impl
+from metrics.FAIRMetricsFactory import FAIRMetricsFactory
+from metrics.util import SOURCE, inspect_onto_reg
+from metrics.WebResource import WebResource
+from profiles.bioschemas_shape_gen import validate_any_from_KG
 from profiles.ProfileFactory import (
     PROFILES,
+    dyn_evaluate_profile_with_conformsto,
+    evaluate_profile_from_type,
     load_profiles,
     update_profiles,
-    evaluate_profile_from_type,
-    dyn_evaluate_profile_with_conformsto,
 )
 
-import atexit
-import requests
-from requests.exceptions import ConnectionError
-from pymongo import MongoClient
-from bson import ObjectId
-from bson.errors import InvalidId
-
-requests.packages.urllib3.disable_warnings(
-    requests.packages.urllib3.exceptions.InsecureRequestWarning
-)
-from apscheduler.schedulers.background import BackgroundScheduler
-
-import git
+from queue import Queue
 
 basedir = path.abspath(path.dirname(__file__))
 
@@ -83,6 +85,25 @@ app = Flask(__name__)
 
 app.config.SWAGGER_UI_OPERATION_ID = True
 app.config.SWAGGER_UI_REQUEST_DURATION = True
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# Create handler for stdout
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.INFO)
+
+# Create formatter and attach it
+formatter = logging.Formatter("[%(asctime)s] [%(levelname)s] %(name)s: %(message)s")
+handler.setFormatter(formatter)
+
+# Avoid duplicate logs
+if not logger.handlers:
+    logger.addHandler(handler)
+
+# Use Flask's app.logger
+app.logger.handlers = logger.handlers
+app.logger.setLevel(logger.level)
 
 
 @app.route("/")
@@ -100,64 +121,10 @@ app.logger.propagate = False
 CORS(app)
 app.config["CORS_HEADERS"] = "Content-Type"
 
-prod_logger = logging.getLogger("PROD")
-dev_logger = logging.getLogger("DEV")
-app_logger = logging.getLogger("app")
-root_logger = logging.getLogger("root")
-app_logger.propagate = False
-root_logger.propagate = False
-
-# loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
-# for logger in loggers:
-#     print(logger)
-
-print(f'ENV is set to: {app.config["ENV"]}')
-
 if app.config["ENV"] == "production":
     app.config.from_object("config.ProductionConfig")
-
-    prod_log_handler = logging.FileHandler("prod.log")
-    # prod_log_handler = logging.StreamHandler(sys.stdout)
-
-    # Add a formatter
-    prod_formatter = logging.Formatter(
-        "%(asctime)s - [%(levelname)s] %(message)s", "%d/%m/%Y %H:%M:%S"
-    )
-
-    prod_log_handler.setFormatter(prod_formatter)
-    prod_logger.addHandler(prod_log_handler)
-
-    prod_logger.setLevel(logging.INFO)
-
-    # Prevent DEV logger from output
-    dev_logger.propagate = False
-
-    # Update bioschemas profile when starting server in production
-    # update_profiles()
 else:
     app.config.from_object("config.DevelopmentConfig")
-
-    dev_log_handler = logging.StreamHandler()
-    # Add a formatter
-    dev_formatter = logging.Formatter(
-        "[%(name)s-%(levelname)s][%(filename)s-%(lineno)d] - %(message)s",
-    )
-
-    dev_log_handler.setFormatter(dev_formatter)
-    dev_logger.addHandler(dev_log_handler)
-    dev_logger.setLevel(logging.DEBUG)
-
-    # Prevent PROD logger from output
-    prod_logger.propagate = False
-
-# dev_logger.warning("Watch out dev!")
-# dev_logger.info("I told you so dev")
-# dev_logger.debug("DEBUG dev")
-#
-# prod_logger.warning("Watch out prod!")
-# prod_logger.info("I told you so prod")
-# prod_logger.debug("DEBUG prod")
-
 
 api = Api(
     app=app,
@@ -273,7 +240,7 @@ def display_info():
     try:
         env_banner_info = dotenv_values(".env")["BANNER_INFO"]
     except KeyError:
-        dev_logger.warning(
+        logger.warning(
             "BANNER_INFO is not set in .env (e.g. BANNER_INFO='Write your message here')"
         )
         DICT_BANNER_INFO["banner_message_info"].pop("env_info", None)
@@ -316,7 +283,7 @@ def update_vocab_status():
     else:
         DICT_BANNER_INFO["banner_message_info"].pop("status_lov", None)
 
-    prod_logger.info("Updating banner status")
+    logger.info("Updating banner status")
 
 
 profiles = PROFILES
@@ -337,6 +304,8 @@ scheduler.add_job(
 scheduler.add_job(func=update_profiles, trigger="interval", seconds=604800)
 scheduler.add_job(func=util.gen_usage_statistics, trigger="interval", seconds=10000)
 scheduler.start()
+
+logger.info("Background scheduler started")
 
 # Shut down the scheduler when exiting the app
 atexit.register(lambda: scheduler.shutdown())
@@ -372,9 +341,9 @@ def documentation(filename):
 @app.route("/")
 def home():
     return render_template(
-        # "index.html",
-        # title="FAIR-Checker",
-        # subtitle="Improve the FAIRness of your web resources",
+        "index.html",
+        title="FAIR-Checker",
+        subtitle="Improve the FAIRness of your web resources",
     )
 
 
@@ -974,7 +943,7 @@ def list_routes():
 
 @socketio.on("webresource")
 def handle_webresource(url):
-    dev_logger.info("A new url to retrieve metadata from !")
+    logger.info("A new url to retrieve metadata from !")
 
 
 @socketio.on("evaluate_metric")
@@ -991,7 +960,7 @@ def handle_metric(json):
     metric_name = json["metric_name"]
     client_metric_id = json["id"]
     url = json["url"]
-    dev_logger.info("Testing: " + url)
+    logger.info("Testing: " + url)
 
     # if implem == "FAIRMetrics":
     # evaluate_fairmetrics(json, metric_name, client_metric_id, url)
@@ -1085,11 +1054,11 @@ def evaluate_fc_metrics(metric_name, client_metric_id, url):
     # print(metric_name)
     # print(METRICS_CUSTOM)
 
-    dev_logger.info("Evaluating FAIR-Checker metric")
+    logger.info("Evaluating FAIR-Checker metric")
     # prod_logger.info("Evaluating FAIR-Checker metric")
     id = METRICS_CUSTOM[metric_name].get_id()
-    dev_logger.info("ID: " + id)
-    dev_logger.info("Client ID: " + client_metric_id)
+    logger.info("ID: " + id)
+    logger.info("Client ID: " + client_metric_id)
     # Faire une fonction recursive ?
     if cache.get(url) == "pulling":
         while True:
@@ -1107,9 +1076,9 @@ def evaluate_fc_metrics(metric_name, client_metric_id, url):
 
     METRICS_CUSTOM[metric_name].set_web_resource(webresource)
     name = METRICS_CUSTOM[metric_name].get_principle_tag()
-    dev_logger.warning("Evaluation: " + metric_name)
+    logger.warning("Evaluation: " + metric_name)
 
-    # dev_logger.info("Evaluating: " + metric_name)
+    # logger.info("Evaluating: " + metric_name)
     result = METRICS_CUSTOM[metric_name].evaluate()
 
     score = result.get_score()
@@ -1163,8 +1132,8 @@ def evaluate_fc_metrics(metric_name, client_metric_id, url):
 
 @socketio.on("done_fair_assessment")
 def handle_done_fair_assessment(data):
-    dev_logger.info("FAIR assessment done !")
-    dev_logger.info(data)
+    logger.info("FAIR assessment done !")
+    logger.info(data)
 
     client = MongoClient()
     db = client.fair_checker
@@ -1442,7 +1411,7 @@ def handle_connect():
 
     sid = request.sid
 
-    dev_logger.info("Connected with SID " + sid)
+    logger.info("Connected with SID " + sid)
 
     # Creates a new temp file
     # with open("./temp/" + sid, 'w') as fp:
@@ -1529,23 +1498,23 @@ def handle_embedded_annot_2(data):
     print("Retrieve KG for uri: " + uri)
 
     web_resource = WebResource(uri)
-    # kg = web_resource.get_rdf()
-    kgs = web_resource.get_wr_kg_dataset()
+    kg = web_resource.get_rdf()
+    # kgs = web_resource.get_wr_kg_dataset()
     # print(kgs.serialize(format="trig"))
     # nb_triples = len(kgs)
     # print(nb_triples)
 
-    KGS[sid] = kgs
+    KGS[sid] = kg
 
     # for kg in kgs.graphs():
     #     print(kg)
 
-    kgs_len = named_kg_len(kgs)
+    kgs_len = named_kg_len(kg)
 
     emit(
         "send_annot_2",
         {
-            "kg": str(kgs.serialize(format=RDF_TYPE[sid])),
+            "kg": str(kg.serialize(format=RDF_TYPE[sid])),
             "kgs_len": kgs_len,
         },
     )
@@ -1645,108 +1614,6 @@ def handle_describe_loa(data):
             "kgs_len": kgs_len,
         },
     )
-
-
-@DeprecationWarning
-@socketio.on("retrieve_embedded_annot")
-def handle_embedded_annot(data):
-    """
-    socketio Handler to aggregate original page metadata with sparql endpoints.
-    emit the result of sparql requests
-
-    @param data dict Contains the data needed to aggregate (url, etc).
-    """
-    step = 0
-    sid = request.sid
-    print(sid)
-    uri = str(data["url"])
-    print("retrieving embedded annotations for " + uri)
-    print("Retrieve KG for uri: " + uri)
-    # page = requests.get(uri)
-    # html = page.content
-
-    # use selenium to retrieve Javascript genereted content
-    html = util.get_html_selenium(uri)
-
-    d = extruct.extract(
-        html, syntaxes=["microdata", "rdfa", "json-ld"], errors="ignore"
-    )
-
-    kg = ConjunctiveGraph()
-
-    # kg = util.get_rdf_selenium(uri, kg)
-
-    # kg = util.extruct_to_rdf(d)
-
-    base_path = Path(__file__).parent  # current directory
-    static_file_path = str((base_path / "static/data/jsonldcontext.json").resolve())
-
-    # remove whitespaces from @id values after axtruct
-    for key, val in d.items():
-        for dict in d[key]:
-            list(util.replace_value_char_for_key("@id", dict, " ", "_"))
-
-    for md in d["json-ld"]:
-        if "@context" in md.keys():
-            if ("https://schema.org" in md["@context"]) or (
-                "http://schema.org" in md["@context"]
-            ):
-                md["@context"] = static_file_path
-        kg.parse(data=json.dumps(md, ensure_ascii=False), format="json-ld")
-    for md in d["rdfa"]:
-        if "@context" in md.keys():
-            if ("https://schema.org" in md["@context"]) or (
-                "http://schema.org" in md["@context"]
-            ):
-                md["@context"] = static_file_path
-        kg.parse(data=json.dumps(md, ensure_ascii=False), format="json-ld")
-    for md in d["microdata"]:
-        if "@context" in md.keys():
-            if ("https://schema.org" in md["@context"]) or (
-                "http://schema.org" in md["@context"]
-            ):
-                md["@context"] = static_file_path
-        kg.parse(data=json.dumps(md, ensure_ascii=False), format="json-ld")
-
-    KGS[sid] = kg
-
-    step += 1
-    emit("update_annot", step)
-    emit("send_annot", str(kg.serialize(format="turtle").decode()))
-    print(len(kg))
-
-    # check if id or doi in uri
-    if util.is_DOI(uri):
-        uri = util.get_DOI(uri)
-        print(f"FOUND DOI: {uri}")
-        # describe on lod.openair
-
-        # @TODO fix wikidata / LOA / etc. access
-        kg = util.describe_openaire(uri, kg)
-        step += 1
-        emit("update_annot", step)
-        emit("send_annot", str(kg.serialize(format="turtle").decode()))
-        print(len(kg))
-
-    # kg = util.describe_opencitation(uri, kg)
-    # step += 1
-    # emit('update_annot', step)
-    # emit('send_annot', str(kg.serialize(format='turtle').decode()))
-    # print(len(kg))
-    #
-    # kg = util.describe_wikidata(uri, kg)
-    # step += 1
-    # emit('update_annot', step)
-    # emit('send_annot', str(kg.serialize(format='turtle').decode()))
-    # print(len(kg))
-
-    kg = util.describe_biotools(uri, kg)
-    step += 1
-    emit("update_annot", step)
-    emit("send_annot", str(kg.serialize(format="turtle").decode()))
-    print(f"ended with step {step}")
-    print(len(kg))
-    print(step)
 
 
 @socketio.on("complete_kg")
