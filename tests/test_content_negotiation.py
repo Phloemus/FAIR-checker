@@ -2,7 +2,7 @@ import logging
 import unittest
 
 import requests
-from rdflib import Graph, URIRef
+from rdflib import URIRef
 
 from metrics.WebResource import WebResource
 
